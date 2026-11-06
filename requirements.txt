@@ -1,0 +1,3 @@
+# Install with: pip install -r requirements.txt
+# tkinter and json come with Python, so they are not listed here.
+pytest
