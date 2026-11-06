@@ -1,10 +1,3 @@
-"""Pytest tests for SkyPort's core functions.
-
-Run from the project folder with:  pytest test_project.py
-Tests only use small, made-up data kept in memory. They never open
-the GUI or change data/bookings.json.
-"""
-
 from project import FLIGHTS, search_flights
 
 
@@ -13,7 +6,7 @@ from project import FLIGHTS, search_flights
 # ---------------------------------------------------------------------
 
 def test_search_flights():
-    """Search matches destinations, ignores case/spaces, handles blanks."""
+    "Search matches destinations, ignores case/spaces, handles blanks."
     results = search_flights(FLIGHTS, "Toronto")
     result_ids = []
     for flight in results:
