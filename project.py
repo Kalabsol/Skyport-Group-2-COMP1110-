@@ -103,6 +103,34 @@ def search_flights(flights, destination):
     return results
 
 
+def sort_flights_by_price(flights, cabin):
+    """Sort flights from cheapest to most expensive for one cabin.
+
+    Args:
+        flights: a list of flight dictionaries.
+        cabin: "Economy" or "Business".
+
+    Returns:
+        A new list sorted by flight["prices"][cabin], lowest first.
+        The original list is not changed.
+
+    Raises:
+        ValueError: if cabin is not a valid cabin name.
+    """
+    if cabin not in CABINS:
+        raise ValueError("Cabin must be Economy or Business.")
+    remaining = list(flights)
+    sorted_flights = []
+    while len(remaining) > 0:
+        cheapest = remaining[0]
+        for flight in remaining:
+            if flight["prices"][cabin] < cheapest["prices"][cabin]:
+                cheapest = flight
+        sorted_flights.append(cheapest)
+        remaining.remove(cheapest)
+    return sorted_flights
+
+
 # ---------------------------------------------------------------------
 # Program entry point
 # ---------------------------------------------------------------------
