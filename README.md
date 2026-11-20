@@ -37,7 +37,7 @@ dictionaries called `FLIGHTS`; bookings are a list of dictionaries.
 |---|---|
 | `search_flights` | Find flights whose destination contains the typed text (ignores case and spaces). |
 | `sort_flights_by_price` | Return flights ordered cheapest first for Economy or Business. |
-| `available_seats` | *TODO* — list free seats in one cabin of one flight. |
+| `available_seats` | List free seats in one cabin of one flight; seats on cancelled bookings count as free. |
 | `validate_passenger_name` | *TODO* |
 | `calculate_baggage_fee` | *TODO* |
 | `calculate_ticket_price` | *TODO* |
@@ -74,6 +74,7 @@ pytest test_project.py
 |---|---|
 | `test_search_flights` | Correct matches, case and spaces ignored, partial names match, no match and blank input give an empty list, original list unchanged. |
 | `test_sort_flights_by_price` | Cheapest-first order for both cabins, original list unchanged, empty list works, invalid cabin raises `ValueError`. |
+| `test_available_seats` | Confirmed and checked-in seats removed, cancelled seat free again, other flights/cabins ignored, seat order kept, invalid cabin raises `ValueError`. |
 
 *TODO: add a row for each remaining test as it is written.*
 

@@ -131,6 +131,41 @@ def sort_flights_by_price(flights, cabin):
     return sorted_flights
 
 
+def available_seats(flight, bookings, cabin):
+    """List the seats that are still free in one cabin of one flight.
+
+    A seat is taken when an active booking (confirmed or checked_in)
+    on this same flight and cabin uses it. Cancelled bookings do not
+    hold a seat.
+
+    Args:
+        flight: one flight dictionary.
+        bookings: a list of booking dictionaries.
+        cabin: "Economy" or "Business".
+
+    Returns:
+        A new list of free seat names, in the same order as the
+        flight's seat list.
+
+    Raises:
+        ValueError: if the flight does not have this cabin.
+    """
+    if cabin not in flight["seats"]:
+        raise ValueError("Cabin must be Economy or Business.")
+    taken_seats = []
+    for booking in bookings:
+        same_flight = booking["flight_id"] == flight["id"]
+        same_cabin = booking["cabin"] == cabin
+        is_active = booking["status"] in ACTIVE_STATUSES
+        if same_flight and same_cabin and is_active:
+            taken_seats.append(booking["seat"])
+    free_seats = []
+    for seat in flight["seats"][cabin]:
+        if seat not in taken_seats:
+            free_seats.append(seat)
+    return free_seats
+
+
 # ---------------------------------------------------------------------
 # Program entry point
 # ---------------------------------------------------------------------

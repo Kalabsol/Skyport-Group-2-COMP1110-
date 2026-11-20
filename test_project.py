@@ -1,6 +1,25 @@
 import pytest
 
-from project import FLIGHTS, search_flights, sort_flights_by_price
+from project import (
+    FLIGHTS,
+    available_seats,
+    search_flights,
+    sort_flights_by_price,
+)
+
+
+def make_test_booking(reference, flight_id, cabin, seat, status):
+    """Build a small fake booking dictionary for use in tests."""
+    return {
+        "reference": reference,
+        "passenger": "Test Passenger",
+        "flight_id": flight_id,
+        "cabin": cabin,
+        "seat": seat,
+        "bags": 0,
+        "total_price": 0,
+        "status": status,
+    }
 
 
 # ---------------------------------------------------------------------
@@ -53,3 +72,32 @@ def test_sort_flights_by_price():
 
     with pytest.raises(ValueError):
         sort_flights_by_price(FLIGHTS, "First")
+
+
+def test_available_seats():
+    """Only active bookings on the same flight and cabin take a seat."""
+    flight = FLIGHTS[0]  # SK101
+    bookings = [
+        make_test_booking("SP1001", "SK101", "Economy", "3A", "confirmed"),
+        make_test_booking("SP1002", "SK101", "Economy", "4C", "checked_in"),
+        make_test_booking("SP1003", "SK101", "Economy", "3B", "cancelled"),
+        make_test_booking("SP1004", "SK202", "Economy", "3C", "confirmed"),
+        make_test_booking("SP1005", "SK101", "Business", "1A", "confirmed"),
+    ]
+
+    economy = available_seats(flight, bookings, "Economy")
+    # 3A and 4C are taken; cancelled 3B is free again; 3C is only
+    # taken on a different flight. Original order is kept.
+    assert economy == ["3B", "3C", "4A", "4B"]
+
+    business = available_seats(flight, bookings, "Business")
+    assert business == ["1B", "2A", "2B"]
+
+    # With no bookings every seat is free.
+    assert available_seats(flight, [], "Business") == ["1A", "1B", "2A", "2B"]
+
+    # The flight's own seat list is not changed.
+    assert len(flight["seats"]["Economy"]) == 6
+
+    with pytest.raises(ValueError):
+        available_seats(flight, bookings, "First")
