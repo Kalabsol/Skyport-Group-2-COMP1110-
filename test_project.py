@@ -101,3 +101,27 @@ def test_available_seats():
 
     with pytest.raises(ValueError):
         available_seats(flight, bookings, "First")
+
+
+# ---------------------------------------------------------------------
+# Jake - Pricing and validation
+# ---------------------------------------------------------------------
+
+# (Jake: test_validate_passenger_name, test_calculate_baggage_fee,
+#  test_calculate_ticket_price go here.)
+
+
+# ---------------------------------------------------------------------
+# MD - Reservation creation
+# ---------------------------------------------------------------------
+
+# (MD: test_next_booking_reference, test_make_booking,
+#  test_find_booking go here.)
+
+
+# ---------------------------------------------------------------------
+# Jidaoy - Booking operations
+# ---------------------------------------------------------------------
+
+# (Jidaoy: test_cancel_booking, test_check_in_booking,
+#  test_booking_statistics go here.)

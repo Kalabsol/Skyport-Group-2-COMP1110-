@@ -167,6 +167,29 @@ def available_seats(flight, bookings, cabin):
 
 
 # ---------------------------------------------------------------------
+# Jake (Member 2) - Pricing and validation
+# ---------------------------------------------------------------------
+
+# (Jake: validate_passenger_name, calculate_baggage_fee,
+#  calculate_ticket_price go here.)
+
+
+# ---------------------------------------------------------------------
+# MD (Member 3) - Reservation creation
+# ---------------------------------------------------------------------
+
+# (MD: next_booking_reference, make_booking, find_booking go here.)
+
+
+# ---------------------------------------------------------------------
+# Jidaoy (Member 4) - Booking operations
+# ---------------------------------------------------------------------
+
+# (Jidaoy: cancel_booking, check_in_booking, booking_statistics
+#  go here.)
+
+
+# ---------------------------------------------------------------------
 # Program entry point
 # ---------------------------------------------------------------------
 
