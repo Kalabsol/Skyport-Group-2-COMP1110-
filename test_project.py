@@ -3,8 +3,11 @@ import pytest
 from project import (
     FLIGHTS,
     available_seats,
+    calculate_baggage_fee,
+    calculate_ticket_price,
     search_flights,
     sort_flights_by_price,
+    validate_passenger_name,
 )
 
 
@@ -107,8 +110,58 @@ def test_available_seats():
 # Jake - Pricing and validation
 # ---------------------------------------------------------------------
 
-# (Jake: test_validate_passenger_name, test_calculate_baggage_fee,
-#  test_calculate_ticket_price go here.)
+def test_validate_passenger_name():
+    """Test valid and invalid passenger names."""
+
+    # Valid names
+    assert validate_passenger_name("Alex") is True
+    assert validate_passenger_name("Mary") is True
+    assert validate_passenger_name("Lee") is True
+
+    # Invalid names
+    assert validate_passenger_name("") is False
+    assert validate_passenger_name(" ") is False
+    assert validate_passenger_name("A") is False
+
+def test_calculate_baggage_fee():
+    """Test baggage fees and invalid bag counts."""
+
+    # Valid bag counts
+    assert calculate_baggage_fee(0) == 0
+    assert calculate_baggage_fee(2) == 60
+    assert calculate_baggage_fee(3) == 90
+
+    # Invalid bag counts
+    with pytest.raises(ValueError):
+        calculate_baggage_fee(-1)
+
+    with pytest.raises(ValueError):
+        calculatge_baggage_fee(4)
+
+    with pytest.raises(ValueError):
+        calculate_baggage_fee(1.5)
+
+    with pytest.raises(ValueError):
+        calculate_baggage_fee(True)
+
+def test_calculate_ticket_price():
+    """Test ticket prices with baggage fees."""
+
+flight = FLIGHTS[0]
+
+    # Valid ticket prices
+    assert calculate_ticket_price(flight, "Economy", 0) == 250
+    assert calculate_ticket_price(flight, "Business", 0) == 450
+    assert calculate_ticket_price(flight, "Economy", 1) == 280
+    assert calculate_ticket_price(flight, "Business", 3) == 540
+
+    # Invalid cabin
+    with pytest.raises(ValueError):
+        calculate_ticket_price(flight, "First", 0)
+
+    # Invalid bag count
+    with pytest.raises(ValueError):
+        calculate_ticket_price(flight, "Economy", 5)
 
 
 # ---------------------------------------------------------------------
