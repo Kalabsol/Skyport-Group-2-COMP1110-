@@ -14,6 +14,12 @@ CABINS = ["Economy", "Business"]
 # confirmed or checked in.
 ACTIVE_STATUSES = ["confirmed", "checked_in"]
 
+# Price of one checked bag in CAD.
+BAG_FEE = 30
+
+# Maximum number of checked bags.
+MAX_BAGS = 3
+
 # Fictional flights. Prices are whole numbers in simulated CAD.
 FLIGHTS = [
     {
@@ -170,8 +176,79 @@ def available_seats(flight, bookings, cabin):
 # Jake (Member 2) - Pricing and validation
 # ---------------------------------------------------------------------
 
-# (Jake: validate_passenger_name, calculate_baggage_fee,
-#  calculate_ticket_price go here.)
+def validate_passenger_name(name):
+    """Check whether a passenger name is valid.
+
+    Args:
+        name: The passenger's name.
+
+    Returns:
+        True if the name is valid, otherwise False.
+    """
+    if type(name) != str:
+        return False
+
+    name = name.strip()
+
+    if len(name) < 2 or len(name) > 50:
+        return False
+
+    has_letter = False
+
+    for character in name:
+        if character.isalpha():
+            has_letter = True
+        elif character not in " -'":
+            return False
+
+    return has_letter
+
+
+def calculate_baggage_fee(bags):
+    """Calculate the total checked baggage fee.
+
+    Args:
+        bags: Number of checked bags.
+
+    Returns:
+        Total baggage fee in CAD.
+
+    Raises:
+        ValueError: If the number of bags is invalid.
+    """
+    if type(bags) != int:
+        raise ValueError("Bags must be a whole number.")
+
+    if bags < 0 or bags > MAX_BAGS:
+        raise ValueError("Bags must be between 0 and 3.")
+
+    return bags * BAG_FEE
+
+
+def calculate_ticket_price(flight, cabin, bags):
+    """Calculate the total ticket price including baggage.
+
+    Args:
+        flight: A dictionary containing flight information.
+        cabin: The selected cabin class.
+        bags: Number of checked bags.
+
+    Returns:
+        Total ticket price in CAD.
+
+    Raises:
+        ValueError: If the cabin or bag count is invalid.
+    """
+    if cabin not in CABINS:
+        raise ValueError("Cabin must be Economy or Business.")
+
+    base_price = flight["prices"][cabin]
+    bag_cost = calculate_baggage_fee(bags)
+
+    total_price = base_price + bag_cost
+
+    return total_price
+
 
 
 # ---------------------------------------------------------------------
