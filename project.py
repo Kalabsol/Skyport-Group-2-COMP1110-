@@ -185,7 +185,7 @@ def validate_passenger_name(name):
     Returns:
         True if the name is valid, otherwise False.
     """
-    if type(name) != str:
+    if type(name) is not str:
         return False
 
     name = name.strip()
@@ -216,11 +216,12 @@ def calculate_baggage_fee(bags):
     Raises:
         ValueError: If the number of bags is invalid.
     """
-    if type(bags) != int:
+    if type(bags) is not int:
         raise ValueError("Bags must be a whole number.")
 
     if bags < 0 or bags > MAX_BAGS:
-        raise ValueError("Bags must be between 0 and 3.")
+        raise ValueError("Bags must be between 0 and " + str(MAX_BAGS) + "."
+    )
 
     return bags * BAG_FEE
 
