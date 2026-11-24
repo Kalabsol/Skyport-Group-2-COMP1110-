@@ -38,9 +38,9 @@ dictionaries called `FLIGHTS`; bookings are a list of dictionaries.
 | `search_flights` | Find flights whose destination contains the typed text (ignores case and spaces). |
 | `sort_flights_by_price` | Return flights ordered cheapest first for Economy or Business. |
 | `available_seats` | List free seats in one cabin of one flight; seats on cancelled bookings count as free. |
-| `validate_passenger_name` | *TODO* |
-| `calculate_baggage_fee` | *TODO* |
-| `calculate_ticket_price` | *TODO* |
+| `validate_passenger_name` | Check whether a passenger name is valid, allowing letters, spaces, hyphens and apostrophes. |
+| `calculate_baggage_fee` | Calculate the baggage fee based on the number of bags and reject invalid bag counts.|
+| `calculate_ticket_price` | Calculate the total ticket price based on the selected cabin and baggage fee.  |
 | `next_booking_reference` | *TODO* |
 | `make_booking` | *TODO* |
 | `find_booking` | *TODO* |
