@@ -3,7 +3,7 @@
 **Source file:** project.py
 
 ## What it does (plain English)
-It looks at all bookings and counts how many are active, how many are checked in, and how many are canceled. It also adds up the total money earned from active bookings, and counts all the free seats across the entire airline. It returns all this information in a single dictionary.
+It looks at all bookings and counts how many are active, how many are checked in, and how many are cancelled. It also adds up the total money earned from active bookings, and counts all the free seats across the entire airline. It returns all this information in a single dictionary.
 
 ## Why we need it
 The administrator screen needs a quick overview of how the airline is doing. Instead of reading every single booking, the system calls this function to get the exact numbers to display on the dashboard.
@@ -33,7 +33,7 @@ for booking in bookings:
     if status == "cancelled":
         cancelled_count += 1
 ```
-We loop over every booking. If the status is "confirmed" or "checked_in" (which is what `ACTIVE_STATUSES` holds), it's active, so we add 1 to the active count and add its `total_price` to our revenue. We also separately count the checked-in and canceled ones.
+We loop over every booking. If the status is "confirmed" or "checked_in" (which is what `ACTIVE_STATUSES` holds), it's active, so we add 1 to the active count and add its `total_price` to our revenue. We also separately count the checked-in and cancelled ones.
 ```python
 free_seats_count = 0
 for flight in flights:
@@ -46,7 +46,7 @@ To count free seats, we loop through every single flight, and then every cabin (
 return {
     "active_bookings": active_count,
     "checked_in": checked_in_count,
-    "canceled_bookings": canceled_count,
+    "cancelled_bookings": cancelled_count,
     "available_seats": free_seats_count,
     "active_revenue": revenue,
 }
@@ -58,7 +58,7 @@ booking_statistics(FLIGHTS, [])
 # Returns: {
 #    "active_bookings": 0,
 #    "checked_in": 0,
-#    "canceled_bookings": 0,
+#    "cancelled_bookings": 0,
 #    "available_seats": 50,
 #    "active_revenue": 0
 # }
@@ -66,24 +66,24 @@ booking_statistics(FLIGHTS, [])
 ## Edge cases and errors
 - Empty bookings list → all counts are 0, revenue is 0, and available seats is exactly 50 (5 flights × 10 seats).
 
-- A canceled booking with a high price → its price is ignored in the revenue calculation because it is not active.
+- A cancelled booking with a high price → its price is ignored in the revenue calculation because it is not active.
 ## How we test it
 `test_booking_statistics()` in test_project.py checks:
 1. An empty list gives 0 for all counts, 0 for revenue, and exactly 50 for free seats.
 
-2. A mix of 3 bookings (confirmed 280, checked_in 450, canceled 300) results in:
+2. A mix of 3 bookings (confirmed 280, checked_in 450, cancelled 300) results in:
 
-- active 2, checked_in 1, canceled 1.
+- active 2, checked_in 1, cancelled 1.
 
-- revenue 730 (the canceled 300 is ignored).
+- revenue 730 (the cancelled 300 is ignored).
 
 - available seats 48 (two seats are currently taken by the active bookings).
 ## Python concepts used
 Dictionaries (creating and returning), `for` loops, nested `for` loops, `if` statements, accumulating totals (`+=`), the `in` operator on lists, and calling other functions (`available_seats`, `len`).
 ## Possible professor Q&A
-**Q: Why not count the canceled booking's total_price in the revenue?**
+**Q: Why not count the cancelled booking's total_price in the revenue?**
 
-A: Because the passenger canceled. We didn't actually earn that money, so it shouldn't be counted as revenue.
+A: Because the passenger cancelled. We didn't actually earn that money, so it shouldn't be counted as revenue.
 
 **Q: How do we count free seats without double-counting?**
 

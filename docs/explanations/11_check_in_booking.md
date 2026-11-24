@@ -3,7 +3,7 @@
 **Source file:** project.py
 
 ## What it does (plain English)
-It looks for a booking using its reference code. If the booking exists and its status is "confirmed", it changes the status to "checked_in" and returns True. If it's not found, already checked in, or canceled, it returns False and changes nothing. 
+It looks for a booking using its reference code. If the booking exists and its status is "confirmed", it changes the status to "checked_in" and returns True. If it's not found, already checked in, or cancelled, it returns False and changes nothing. 
 
 ## Why we need it
 When a passenger arrives at the airport, they need to check in. This function handles that step. Once a booking is "checked_in", the passenger is officially on the flight and holds a seat. Note that this function does not print the boarding pass; it only updates the status. The GUI will read the updated booking to show the boarding pass.
@@ -25,7 +25,7 @@ We find the booking. If it doesn't exist, we return `False`.
 if booking["status"] != "confirmed":
     return False
 ```
-You can only check in if you are currently "confirmed". If you already checked in (status is "checked_in") or your booking is canceled, this check fails.
+You can only check in if you are currently "confirmed". If you already checked in (status is "checked_in") or your booking is cancelled, this check fails.
 ```python
 booking["status"] = "checked_in"
 return True
@@ -43,7 +43,7 @@ check_in_booking(bookings, "SP1001")
 
 - Booking is already "checked_in" → returns `False`.
 
-- Booking is "canceled" → returns `False`.
+- Booking is "cancelled" → returns `False`.
 
 - Extra spaces or lower case (e.g., " SP1001 ") → still works perfectly because `find_booking` handles it.
 ## How we test it
@@ -52,7 +52,7 @@ check_in_booking(bookings, "SP1001")
 
 2. Checking in the same booking again returns `False`.
 
-3. A canceled booking cannot check in (returns `False`).
+3. A cancelled booking cannot check in (returns `False`).
 
 4. An unknown reference returns `False`.
 

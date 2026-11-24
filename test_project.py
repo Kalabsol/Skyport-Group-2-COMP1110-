@@ -3,6 +3,7 @@ import pytest
 from project import (
     FLIGHTS,
     available_seats,
+    booking_statistics,
     calculate_baggage_fee,
     calculate_ticket_price,
     search_flights,
@@ -183,8 +184,46 @@ def test_calculate_ticket_price():
 # Jidaoy - Booking operations
 # ---------------------------------------------------------------------
 
+def test_cancel_booking():
+    """Cancel changes status to cancelled, frees the seat, rejects bad states."""
+    b1 = make_test_booking("SP1001", "SK101", "Economy", "3A", "confirmed")
+    b2 = make_test_booking("SP1002", "SK101", "Economy", "3B", "checked_in")
+    b3 = make_test_booking("SP1003", "SK101", "Economy", "3C", "cancelled")
+    bookings = [b1, b2, b3]
+
+    assert cancel_booking(bookings, "SP1001") is True
+    assert b1["status"] == "cancelled"
+    assert len(bookings) == 3
+
+    assert cancel_booking(bookings, "SP1001") is False
+
+    assert cancel_booking(bookings, "SP1002") is False
+    assert b2["status"] == "checked_in"
+
+    assert cancel_booking(bookings, "SP9999") is False
+
+    free_seats = available_seats(FLIGHTS[0], bookings, "Economy")
+    assert "3A" in free_seats
+
+
+def test_check_in_booking():
+    """Check-in changes status to checked_in and rejects bad states."""
+    b1 = make_test_booking("SP1001", "SK101", "Economy", "3A", "confirmed")
+    b2 = make_test_booking("SP1002", "SK101", "Economy", "3B", "cancelled")
+    b3 = make_test_booking("SP1003", "SK101", "Economy", "3C", "checked_in")
+    bookings = [b1, b2, b3]
+
+    assert check_in_booking(bookings, "SP1001") is True
+    assert b1["status"] == "checked_in"
+
+    assert check_in_booking(bookings, "SP1002") is False
+
+    assert check_in_booking(bookings, "SP1003") is False
+
+    assert check_in_booking(bookings, "SP9999") is False
+
 def test_booking_statistics():
-    """Test that booking_statistics counts statuses, revenue, and free seats."""
+    """Statistics count statuses, revenue and free seats."""
     # 1. Test with no bookings: all zeros and exactly 50 free seats.
     empty_stats = booking_statistics(FLIGHTS, [])
     assert empty_stats["active_bookings"] == 0

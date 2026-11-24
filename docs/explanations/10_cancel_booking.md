@@ -3,16 +3,16 @@
 **Source file:** project.py
 
 ## What it does (plain English)
-It looks for a booking using its reference code. If the booking exists and its status is "confirmed", it changes the status to "canceled" and returns True. For any other situation (not found, already checked in, or already canceled), it returns False and changes nothing. It never deletes the booking from the list.
+It looks for a booking using its reference code. If the booking exists and its status is "confirmed", it changes the status to "cancelled" and returns True. For any other situation (not found, already checked in, or already cancelled), it returns False and changes nothing. It never deletes the booking from the list.
 
 ## Why we need it
-Passengers sometimes need to cancel their flights. By changing the status to "canceled" instead of deleting the booking, we keep a record of what happened (history). Also, the `available_seats` function knows that canceled bookings do not hold a seat, so the seat automatically becomes free for someone else to book.
+Passengers sometimes need to cancel their flights. By changing the status to "cancelled" instead of deleting the booking, we keep a record of what happened (history). Also, the `available_seats` function knows that cancelled bookings do not hold a seat, so the seat automatically becomes free for someone else to book.
 
 ## Inputs and output
 - `bookings` — the list of all booking dictionaries.
 - `reference` — a string, the booking reference the user typed (e.g., "SP1001").
-- **Returns** `True` if the booking was successfully canceled, `False` otherwise.
-- **Side effects:** If successful, it changes the "status" key of one booking dictionary inside the `bookings` list to "canceled".
+- **Returns** `True` if the booking was successfully cancelled, `False` otherwise.
+- **Side effects:** If successful, it changes the "status" key of one booking dictionary inside the `bookings` list to "cancelled".
 
 ## Walk-through of the actual code
 ```python
@@ -25,7 +25,7 @@ We use MD's `find_booking` function to find the right dictionary. If it cannot f
 if booking["status"] != "confirmed":
     return False
 ```
-Our business rules say only "confirmed" bookings can be canceled. If the passenger already checked in, or already canceled it, this check stops the function and returns `False`.
+Our business rules say only "confirmed" bookings can be cancelled. If the passenger already checked in, or already cancelled it, this check stops the function and returns `False`.
 ```python
 booking["status"] = "cancelled"
 return True
@@ -35,12 +35,12 @@ Because `find_booking` returns the actual dictionary object from the list, chang
 # Assuming SP1001 is currently "confirmed"
 cancel_booking(bookings, "SP1001")
 # Returns: True
-# The booking's status is now "canceled".
+# The booking's status is now "cancelled".
 ```
 ## Edge cases and errors
 - Unknown reference (e.g., "SP9999") → returns `False`.
 
-- Booking is already "canceled" → returns `False`.
+- Booking is already "cancelled" → returns `False`.
 
 - Booking is "checked_in" → returns `False` (the seat is already in use).
 
@@ -51,24 +51,24 @@ cancel_booking(bookings, "SP1001")
 
 2. Cancelling the same booking again returns `False`.
 
-3. A checked-in booking cannot be canceled (returns `False`, status stays "checked_in").
+3. A checked-in booking cannot be cancelled (returns `False`, status stays "checked_in").
 
 4. An unknown reference returns `False`.
 
-5. The canceled seat is free again (checked using `available_seats`).
+5. The cancelled seat is free again (checked using `available_seats`).
 
 6. The booking is still in the list, so `len(bookings)` does not change.
 ## Python concepts used
 Function calls, dictionary lookups (`booking["status"]`), `if` statements, boolean returns (`True`/`False`), and modifying a dictionary (which mutates the original list because dictionaries are passed by reference).
 ## Possible professor Q&A
-**Q: Why can't a checked-in booking be canceled?**
+**Q: Why can't a checked-in booking be cancelled?**
 
 A: Our rules say once a passenger has checked in, their seat is physically in use, and they have a boarding pass. Allowing a cancel at that point would cause confusion.
 
 **Q: Why change the status instead of deleting the booking?**
 
-A: Deleting it would destroy history and break the rule that references are never reused. Also, `available_seats` frees the seat automatically just by seeing the "canceled" status.
+A: Deleting it would destroy history and break the rule that references are never reused. Also, `available_seats` frees the seat automatically just by seeing the "cancelled" status.
 
 **Q: Why return True/False instead of raising an error?**
 
-A: Invalid bookings (like trying to cancel an already canceled booking) are normal user mistakes, not program bugs. The GUI just needs to show a message like "Cannot cancel", so returning a boolean is the easiest way to handle it.
+A: Invalid bookings (like trying to cancel an already cancelled booking) are normal user mistakes, not program bugs. The GUI just needs to show a message like "Cannot cancel", so returning a boolean is the easiest way to handle it.

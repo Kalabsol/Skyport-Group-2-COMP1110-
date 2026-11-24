@@ -263,8 +263,58 @@ def calculate_ticket_price(flight, cabin, bags):
 # Jidaoy (Member 4) - Booking operations
 # ---------------------------------------------------------------------
 
+def cancel_booking(bookings, reference):
+    """Cancel a confirmed booking by its reference.
+
+    Args:
+        bookings: a list of booking dictionaries.
+        reference: the booking reference to cancel.
+
+    Returns:
+        True if the booking was cancelled, False otherwise.
+    """
+    booking = find_booking(bookings, reference)
+    if booking is None:
+        return False
+
+    if booking["status"] != "confirmed":
+        return False
+
+    booking["status"] = "cancelled"
+    return True
+
+
+def check_in_booking(bookings, reference):
+    """Check in a confirmed booking by its reference.
+
+    Args:
+        bookings: a list of booking dictionaries.
+        reference: the booking reference to check in.
+
+    Returns:
+        True if the booking was checked in, False otherwise.
+    """
+    booking = find_booking(bookings, reference)
+    if booking is None:
+        return False
+
+    if booking["status"] != "confirmed":
+        return False
+
+    booking["status"] = "checked_in"
+    return True
+
 def booking_statistics(flights, bookings):
-    """..."""
+    """Count bookings by status, active revenue and free seats.
+
+    Args:
+        flights: a list of flight dictionaries.
+        bookings: a list of booking dictionaries.
+
+    Returns:
+        A dictionary with the keys "active_bookings", "checked_in",
+        "cancelled_bookings", "available_seats" and "active_revenue".
+    """
     active_count = 0
     checked_in_count = 0
     cancelled_count = 0
