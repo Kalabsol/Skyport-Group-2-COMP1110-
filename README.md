@@ -44,9 +44,9 @@ dictionaries called `FLIGHTS`; bookings are a list of dictionaries.
 | `next_booking_reference` | *TODO* |
 | `make_booking` | *TODO* |
 | `find_booking` | *TODO* |
-| `cancel_booking` | *TODO* |
-| `check_in_booking` | *TODO* |
-| `booking_statistics` | *TODO* |
+| `cancel_booking` | Cancels a confirmed booking, changing its status to cancelled.  |
+| `check_in_booking` | Checks in a confirmed booking, changing its status to checked_in.|
+| `booking_statistics` | Counts active/checked-in/cancelled bookings, calculates revenue, and counts free seats. |
 | `main` | Starts the program (GUI to be added). |
 
 Other files:
@@ -75,6 +75,9 @@ pytest test_project.py
 | `test_search_flights` | Correct matches, case and spaces ignored, partial names match, no match and blank input give an empty list, original list unchanged. |
 | `test_sort_flights_by_price` | Cheapest-first order for both cabins, original list unchanged, empty list works, invalid cabin raises `ValueError`. |
 | `test_available_seats` | Confirmed and checked-in seats removed, cancelled seat free again, other flights/cabins ignored, seat order kept, invalid cabin raises `ValueError`. |
+| `test_cancel_booking` | Cancels confirmed bookings, rejects invalid states, ensures the seat becomes free. |
+| `test_check_in_booking` | Checks in confirmed bookings, rejects cancelled/already checked-in ones. |
+| `test_booking_statistics` | Counts statuses correctly, ignores cancelled revenue, and counts available seats. |
 
 *TODO: add a row for each remaining test as it is written.*
 

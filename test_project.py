@@ -176,5 +176,33 @@ flight = FLIGHTS[0]
 # Jidaoy - Booking operations
 # ---------------------------------------------------------------------
 
-# (Jidaoy: test_cancel_booking, test_check_in_booking,
-#  test_booking_statistics go here.)
+def test_booking_statistics():
+    """Test that booking_statistics counts statuses, revenue, and free seats."""
+    # 1. Test with no bookings: all zeros and exactly 50 free seats.
+    empty_stats = booking_statistics(FLIGHTS, [])
+    assert empty_stats["active_bookings"] == 0
+    assert empty_stats["checked_in"] == 0
+    assert empty_stats["cancelled_bookings"] == 0
+    assert empty_stats["active_revenue"] == 0
+    assert empty_stats["available_seats"] == 50
+
+    # 2. Test with a mix of bookings. Note make_test_booking sets price to 0,
+    # so we must manually set total_price for the test.
+    b1 = make_test_booking("SP1001", "SK101", "Economy", "3A", "confirmed")
+    b1["total_price"] = 280
+
+    b2 = make_test_booking("SP1002", "SK101", "Business", "1A", "checked_in")
+    b2["total_price"] = 450
+
+    b3 = make_test_booking("SP1003", "SK202", "Economy", "3B", "cancelled")
+    b3["total_price"] = 300  # Should NOT be counted in revenue
+
+    bookings = [b1, b2, b3]
+    stats = booking_statistics(FLIGHTS, bookings)
+
+    assert stats["active_bookings"] == 2  # confirmed + checked_in
+    assert stats["checked_in"] == 1
+    assert stats["cancelled_bookings"] == 1
+    assert stats["active_revenue"] == 730  # 280 + 450
+    assert stats["available_seats"] == 48  # 50 - 2 active seats
+

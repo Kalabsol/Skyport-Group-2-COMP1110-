@@ -262,8 +262,36 @@ def calculate_ticket_price(flight, cabin, bags):
 # Jidaoy (Member 4) - Booking operations
 # ---------------------------------------------------------------------
 
-# (Jidaoy: cancel_booking, check_in_booking, booking_statistics
-#  go here.)
+def booking_statistics(flights, bookings):
+    """..."""
+    active_count = 0
+    checked_in_count = 0
+    cancelled_count = 0
+    revenue = 0
+
+    for booking in bookings:
+        status = booking["status"]
+        if status in ACTIVE_STATUSES:
+            active_count += 1
+            revenue += booking["total_price"]
+        if status == "checked_in":
+            checked_in_count += 1
+        if status == "cancelled":
+            cancelled_count += 1
+
+    free_seats_count = 0
+    for flight in flights:
+        for cabin in CABINS:
+            free_seats_list = available_seats(flight, bookings, cabin)
+            free_seats_count += len(free_seats_list)
+
+    return {
+        "active_bookings": active_count,
+        "checked_in": checked_in_count,
+        "cancelled_bookings": cancelled_count,
+        "available_seats": free_seats_count,
+        "active_revenue": revenue,
+    }
 
 
 # ---------------------------------------------------------------------
