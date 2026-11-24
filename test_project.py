@@ -117,6 +117,14 @@ def test_validate_passenger_name():
     assert validate_passenger_name("Alex") is True
     assert validate_passenger_name("Mary") is True
     assert validate_passenger_name("Lee") is True
+    assert validate_passenger_name("Mary-Jane O'Neil") is True
+    assert validate_passenger_name(" Li ") is True
+    assert validate_passenger_name("A" * 50) is True
+
+    assert validate_passenger_name("Alex2") is False
+    assert validate_passenger_name("--") is False
+    assert validate_passenger_name("A" * 51) is False
+    assert validate_passenger_name("Alex@Home") is False
 
     # Invalid names
     assert validate_passenger_name("") is False
@@ -136,7 +144,7 @@ def test_calculate_baggage_fee():
         calculate_baggage_fee(-1)
 
     with pytest.raises(ValueError):
-        calculatge_baggage_fee(4)
+        calculate_baggage_fee(4)
 
     with pytest.raises(ValueError):
         calculate_baggage_fee(1.5)
@@ -146,8 +154,7 @@ def test_calculate_baggage_fee():
 
 def test_calculate_ticket_price():
     """Test ticket prices with baggage fees."""
-
-flight = FLIGHTS[0]
+    flight = FLIGHTS[0]
 
     # Valid ticket prices
     assert calculate_ticket_price(flight, "Economy", 0) == 250
