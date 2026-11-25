@@ -6,6 +6,8 @@ from project import (
     booking_statistics,
     calculate_baggage_fee,
     calculate_ticket_price,
+    cancel_booking,
+    check_in_booking,
     search_flights,
     sort_flights_by_price,
     validate_passenger_name,
@@ -185,7 +187,7 @@ def test_calculate_ticket_price():
 # ---------------------------------------------------------------------
 
 def test_cancel_booking():
-    """Cancel changes status to cancelled, frees the seat, rejects bad states."""
+    """Cancelling frees the seat and rejects bad states."""
     b1 = make_test_booking("SP1001", "SK101", "Economy", "3A", "confirmed")
     b2 = make_test_booking("SP1002", "SK101", "Economy", "3B", "checked_in")
     b3 = make_test_booking("SP1003", "SK101", "Economy", "3C", "cancelled")
@@ -221,6 +223,7 @@ def test_check_in_booking():
     assert check_in_booking(bookings, "SP1003") is False
 
     assert check_in_booking(bookings, "SP9999") is False
+
 
 def test_booking_statistics():
     """Statistics count statuses, revenue and free seats."""

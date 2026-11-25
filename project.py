@@ -304,6 +304,7 @@ def check_in_booking(bookings, reference):
     booking["status"] = "checked_in"
     return True
 
+
 def booking_statistics(flights, bookings):
     """Count bookings by status, active revenue and free seats.
 
