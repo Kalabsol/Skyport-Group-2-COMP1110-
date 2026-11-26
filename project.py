@@ -222,8 +222,7 @@ def calculate_baggage_fee(bags):
         raise ValueError("Bags must be a whole number.")
 
     if bags < 0 or bags > MAX_BAGS:
-        raise ValueError("Bags must be between 0 and " + str(MAX_BAGS) + "."
-    )
+        raise ValueError("Bags must be between 0 and " + str(MAX_BAGS) + ".")
 
     return bags * BAG_FEE
 
