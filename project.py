@@ -7,6 +7,8 @@ All flights, passengers and prices in this program are made up.
 No real airline data or payments are used.
 """
 
+import tkinter as tk
+
 # The two cabin types every flight offers.
 CABINS = ["Economy", "Business"]
 
@@ -445,17 +447,87 @@ def booking_statistics(flights, bookings):
 
 
 # ---------------------------------------------------------------------
+# Window (GUI) - the SkyPortApp class
+# ---------------------------------------------------------------------
+
+# Colours and fonts used by every screen.
+NAVY = "#0b2545"
+TEAL = "#13a89e"
+WHITE = "#ffffff"
+TITLE_FONT = ("Segoe UI", 22, "bold")
+TEXT_FONT = ("Segoe UI", 11)
+
+
+class SkyPortApp:
+    """The SkyPort window. It shows one screen at a time.
+
+    Attributes:
+        root: the main Tkinter window.
+        flights: the list of flight dictionaries.
+        bookings: the list of booking dictionaries.
+        screen: the frame that holds whatever screen is showing.
+    """
+
+    def __init__(self, root, flights, bookings):
+        """Set up the window and show the Home screen."""
+        self.root = root
+        self.flights = flights
+        self.bookings = bookings
+
+        self.root.title("SkyPort")
+        self.root.geometry("760x520")
+        self.root.configure(bg=WHITE)
+
+        self.screen = tk.Frame(self.root, bg=WHITE)
+        self.screen.pack(fill="both", expand=True, padx=20, pady=20)
+
+        self.show_home()
+
+    def clear_screen(self):
+        """Remove everything from the screen so a new one can be drawn."""
+        for widget in self.screen.winfo_children():
+            widget.destroy()
+
+    def add_title(self, text):
+        """Show a large navy heading at the top of the screen."""
+        title = tk.Label(self.screen, text=text, font=TITLE_FONT,
+                         fg=NAVY, bg=WHITE)
+        title.pack(pady=(0, 15))
+
+    def add_button(self, text, command):
+        """Add a teal button that calls command when it is clicked."""
+        button = tk.Button(self.screen, text=text, command=command,
+                           font=TEXT_FONT, fg=WHITE, bg=TEAL, width=22)
+        button.pack(pady=5)
+
+    def show_home(self):
+        """Show the Home screen with a button for each part of SkyPort."""
+        self.clear_screen()
+        self.add_title("SkyPort")
+        welcome = tk.Label(self.screen, font=TEXT_FONT, fg=NAVY, bg=WHITE,
+                           text="Welcome! All flights and prices are "
+                                "fictional (simulated CAD).")
+        welcome.pack(pady=(0, 20))
+        self.add_button("Search flights", self.show_coming_soon)
+        self.add_button("My booking", self.show_coming_soon)
+        self.add_button("Admin", self.show_coming_soon)
+
+    def show_coming_soon(self):
+        """Show a placeholder for screens that are not built yet."""
+        self.clear_screen()
+        self.add_title("Coming soon")
+        self.add_button("Back to home", self.show_home)
+
+
+# ---------------------------------------------------------------------
 # Program entry point
 # ---------------------------------------------------------------------
 
 def main():
-    """Start the SkyPort program.
-
-    For now this only prints a short message. The Tkinter window
-    (SkyPortApp) will be started here in a later phase.
-    """
-    print("SkyPort is under construction. Run the tests with:")
-    print("    pytest test_project.py")
+    """Open the SkyPort window and keep it running until it is closed."""
+    root = tk.Tk()
+    SkyPortApp(root, FLIGHTS, [])
+    root.mainloop()
 
 
 if __name__ == "__main__":
