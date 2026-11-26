@@ -41,9 +41,9 @@ dictionaries called `FLIGHTS`; bookings are a list of dictionaries.
 | `validate_passenger_name` | Check whether a passenger name is valid, allowing letters, spaces, hyphens and apostrophes. |
 | `calculate_baggage_fee` | Calculate the baggage fee based on the number of bags and reject invalid bag counts.|
 | `calculate_ticket_price` | Calculate the total ticket price based on the selected cabin and baggage fee.  |
-| `next_booking_reference` | *TODO* |
-| `make_booking` | *TODO* |
-| `find_booking` | *TODO* |
+| `next_booking_reference` | Make the next reference (`SP1001`, `SP1002`, ...); the highest number + 1, so references are never reused. |
+| `make_booking` | Check the name, flight, cabin, seat and bags, then add a confirmed booking with its total price. |
+| `find_booking` | Find a booking by its reference, ignoring case and spaces; returns `None` if not found. |
 | `cancel_booking` | Cancels a confirmed booking, changing its status to cancelled.  |
 | `check_in_booking` | Checks in a confirmed booking, changing its status to checked_in.|
 | `booking_statistics` | Counts active/checked-in/cancelled bookings, calculates revenue, and counts free seats. |
@@ -77,6 +77,9 @@ pytest test_project.py
 | `test_available_seats` | Confirmed and checked-in seats removed, cancelled seat free again, other flights/cabins ignored, seat order kept, invalid cabin raises `ValueError`. |
 | `test_cancel_booking` | Cancels confirmed bookings, rejects invalid states, ensures the seat becomes free. |
 | `test_check_in_booking` | Checks in confirmed bookings, rejects cancelled/already checked-in ones. |
+| `test_next_booking_reference` | Starts at `SP1001`, uses the highest number + 1, counts cancelled bookings, works when bookings are out of order. |
+| `test_find_booking` | Finds by reference ignoring case and spaces, finds cancelled bookings, returns the real booking, returns `None` when not found. |
+| `test_make_booking` | Saves valid bookings with the right reference and price; bad name, flight, cabin, seat, bags or a taken seat raise `ValueError` and change nothing; a cancelled seat can be rebooked. |
 | `test_booking_statistics` | Counts statuses correctly, ignores cancelled revenue, and counts available seats. |
 
 *TODO: add a row for each remaining test as it is written.*

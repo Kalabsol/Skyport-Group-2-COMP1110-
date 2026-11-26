@@ -8,6 +8,9 @@ from project import (
     calculate_ticket_price,
     cancel_booking,
     check_in_booking,
+    find_booking,
+    make_booking,
+    next_booking_reference,
     search_flights,
     sort_flights_by_price,
     validate_passenger_name,
@@ -178,8 +181,93 @@ def test_calculate_ticket_price():
 # MD - Reservation creation
 # ---------------------------------------------------------------------
 
-# (MD: test_next_booking_reference, test_make_booking,
-#  test_find_booking go here.)
+def test_next_booking_reference():
+    """References start at SP1001 and are never reused."""
+    assert next_booking_reference([]) == "SP1001"
+
+    bookings = [
+        make_test_booking("SP1001", "SK101", "Economy", "3A", "confirmed"),
+        make_test_booking("SP1002", "SK101", "Economy", "3B", "confirmed"),
+    ]
+    assert next_booking_reference(bookings) == "SP1003"
+
+    # A cancelled booking still counts, so its number is not reused.
+    bookings = [
+        make_test_booking("SP1001", "SK101", "Economy", "3A", "confirmed"),
+        make_test_booking("SP1005", "SK101", "Economy", "3B", "cancelled"),
+    ]
+    assert next_booking_reference(bookings) == "SP1006"
+
+    # Bookings out of order: the highest number wins.
+    bookings = [
+        make_test_booking("SP1003", "SK101", "Economy", "3A", "confirmed"),
+        make_test_booking("SP1001", "SK101", "Economy", "3B", "confirmed"),
+    ]
+    assert next_booking_reference(bookings) == "SP1004"
+
+
+def test_find_booking():
+    """Finding ignores case and spaces and returns the real booking."""
+    bookings = [
+        make_test_booking("SP1001", "SK101", "Economy", "3A", "confirmed"),
+        make_test_booking("SP1002", "SK202", "Economy", "3B", "confirmed"),
+        make_test_booking("SP1003", "SK303", "Business", "1A", "cancelled"),
+    ]
+
+    assert find_booking(bookings, "SP1002")["reference"] == "SP1002"
+    assert find_booking(bookings, "  sp1002 ") is bookings[1]
+
+    # No match gives None.
+    assert find_booking(bookings, "SP9999") is None
+    assert find_booking([], "SP1001") is None
+
+    # Cancelled bookings are still found.
+    assert find_booking(bookings, "SP1003")["status"] == "cancelled"
+
+    # The booking returned is the one inside the list, not a copy.
+    assert find_booking(bookings, "SP1001") is bookings[0]
+    assert len(bookings) == 3
+
+
+def test_make_booking():
+    """Valid bookings are saved; any invalid input changes nothing."""
+    bookings = []
+
+    first = make_booking(FLIGHTS, bookings, " Alex Kim ", "SK101",
+                         "Economy", "3A", 1)
+    assert first["reference"] == "SP1001"
+    assert first["passenger"] == "Alex Kim"
+    assert first["status"] == "confirmed"
+    assert first["total_price"] == 280
+    assert len(bookings) == 1
+    assert bookings[0] is first
+
+    second = make_booking(FLIGHTS, bookings, "Mary", "SK202",
+                          "Business", "1A", 0)
+    assert second["reference"] == "SP1002"
+    assert second["total_price"] == 300
+
+    # Each bad input raises ValueError and leaves the list unchanged.
+    with pytest.raises(ValueError):
+        make_booking(FLIGHTS, bookings, "Lee", "SK101", "Economy", "3A", 0)
+    with pytest.raises(ValueError):
+        make_booking(FLIGHTS, bookings, "A1", "SK101", "Economy", "3B", 0)
+    with pytest.raises(ValueError):
+        make_booking(FLIGHTS, bookings, "Lee", "SK999", "Economy", "3B", 0)
+    with pytest.raises(ValueError):
+        make_booking(FLIGHTS, bookings, "Lee", "SK101", "First", "3B", 0)
+    with pytest.raises(ValueError):
+        make_booking(FLIGHTS, bookings, "Lee", "SK101", "Economy", "1A", 0)
+    with pytest.raises(ValueError):
+        make_booking(FLIGHTS, bookings, "Lee", "SK101", "Economy", "3B", 5)
+    assert len(bookings) == 2
+
+    # Once a booking is cancelled, its seat can be booked again.
+    first["status"] = "cancelled"
+    third = make_booking(FLIGHTS, bookings, "Lee", "SK101",
+                         "Economy", "3A", 0)
+    assert third["reference"] == "SP1003"
+    assert len(bookings) == 3
 
 
 # ---------------------------------------------------------------------

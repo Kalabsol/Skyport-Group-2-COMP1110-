@@ -256,7 +256,105 @@ def calculate_ticket_price(flight, cabin, bags):
 # MD (Member 3) - Reservation creation
 # ---------------------------------------------------------------------
 
-# (MD: next_booking_reference, make_booking, find_booking go here.)
+def next_booking_reference(bookings):
+    """Make the next booking reference, such as "SP1001".
+
+    The new number is one more than the highest number already used.
+    Cancelled bookings count too, so a reference is never reused.
+
+    Args:
+        bookings: a list of booking dictionaries.
+
+    Returns:
+        A string: "SP" followed by the next number. With no bookings
+        this is "SP1001".
+    """
+    highest = 1000
+    for booking in bookings:
+        number = int(booking["reference"][2:])
+        if number > highest:
+            highest = number
+    return "SP" + str(highest + 1)
+
+
+def find_booking(bookings, reference):
+    """Find one booking by its reference.
+
+    The search ignores upper/lower case and spaces at the start or
+    end, so " sp1001 " finds "SP1001". Cancelled bookings are found
+    too. Nothing is changed.
+
+    Args:
+        bookings: a list of booking dictionaries.
+        reference: the reference the user typed (a string).
+
+    Returns:
+        The booking dictionary from the list itself (not a copy), or
+        None if no booking has this reference.
+    """
+    search_reference = reference.strip().upper()
+    for booking in bookings:
+        if booking["reference"].upper() == search_reference:
+            return booking
+    return None
+
+
+def make_booking(flights, bookings, passenger, flight_id, cabin, seat,
+                 bags):
+    """Check a new booking, then add it to the bookings list.
+
+    Every check happens first. The booking is only added at the very
+    end, so a failed check never leaves a half-made booking behind.
+
+    Args:
+        flights: a list of flight dictionaries.
+        bookings: a list of booking dictionaries (changed on success).
+        passenger: the passenger's name.
+        flight_id: the id of the chosen flight, such as "SK101".
+        cabin: "Economy" or "Business".
+        seat: the chosen seat, such as "3A".
+        bags: the number of checked bags (0 to 3).
+
+    Returns:
+        The new booking dictionary, with status "confirmed".
+
+    Raises:
+        ValueError: if the name, flight, cabin, seat or bags are not
+            valid, or the seat is already taken.
+    """
+    if not validate_passenger_name(passenger):
+        raise ValueError("Please enter a valid passenger name.")
+
+    flight = None
+    for each_flight in flights:
+        if each_flight["id"] == flight_id:
+            flight = each_flight
+    if flight is None:
+        raise ValueError("Flight " + str(flight_id) + " does not exist.")
+
+    if cabin not in CABINS:
+        raise ValueError("Cabin must be Economy or Business.")
+
+    if seat not in flight["seats"][cabin]:
+        raise ValueError("Seat " + str(seat) + " is not in " + cabin + ".")
+
+    if seat not in available_seats(flight, bookings, cabin):
+        raise ValueError("Seat " + seat + " is already taken.")
+
+    total_price = calculate_ticket_price(flight, cabin, bags)
+
+    new_booking = {
+        "reference": next_booking_reference(bookings),
+        "passenger": passenger.strip(),
+        "flight_id": flight_id,
+        "cabin": cabin,
+        "seat": seat,
+        "bags": bags,
+        "total_price": total_price,
+        "status": "confirmed",
+    }
+    bookings.append(new_booking)
+    return new_booking
 
 
 # ---------------------------------------------------------------------
