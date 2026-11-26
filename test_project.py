@@ -137,6 +137,7 @@ def test_validate_passenger_name():
     assert validate_passenger_name(" ") is False
     assert validate_passenger_name("A") is False
 
+
 def test_calculate_baggage_fee():
     """Test baggage fees and invalid bag counts."""
 
@@ -157,6 +158,7 @@ def test_calculate_baggage_fee():
 
     with pytest.raises(ValueError):
         calculate_baggage_fee(True)
+
 
 def test_calculate_ticket_price():
     """Test ticket prices with baggage fees."""
