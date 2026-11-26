@@ -81,7 +81,9 @@ pytest test_project.py
 | `test_find_booking` | Finds by reference ignoring case and spaces, finds cancelled bookings, returns the real booking, returns `None` when not found. |
 | `test_make_booking` | Saves valid bookings with the right reference and price; bad name, flight, cabin, seat, bags or a taken seat raise `ValueError` and change nothing; a cancelled seat can be rebooked. |
 | `test_booking_statistics` | Counts statuses correctly, ignores cancelled revenue, and counts available seats. |
-
+| `test_validate_passenger_name` | Accepts letters, spaces, hyphens and apostrophes; rejects digits, symbols, blanks, names under 2 or over 50 characters. |
+| `test_calculate_baggage_fee` | 0–3 bags cost $30 each; negative, too many, decimal and True bag counts raise ValueError. |
+| `test_calculate_ticket_price` | Cabin price plus baggage fee is correct; an invalid cabin or bag count raises ValueError. |
 *TODO: add a row for each remaining test as it is written.*
 
 ## Known limitations
