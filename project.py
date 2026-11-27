@@ -457,6 +457,7 @@ WHITE = "#ffffff"
 TITLE_FONT = ("Segoe UI", 22, "bold")
 TEXT_FONT = ("Segoe UI", 11)
 HEADING_FONT = ("Segoe UI", 11, "bold")
+PASS_FONT = ("Consolas", 12)
 
 
 class SkyPortApp:
@@ -469,6 +470,7 @@ class SkyPortApp:
         screen: the frame that holds whatever screen is showing.
         results: the flights shown on the Flight Search screen.
         flight: the flight being booked on the Booking screen.
+        found: the booking shown on the My Booking screen, or None.
     """
 
     def __init__(self, root, flights, bookings):
@@ -478,6 +480,7 @@ class SkyPortApp:
         self.bookings = bookings
         self.results = []
         self.flight = None
+        self.found = None
 
         self.root.title("SkyPort")
         self.root.geometry("760x600")
@@ -525,7 +528,7 @@ class SkyPortApp:
                                 "fictional (simulated CAD).")
         welcome.pack(pady=(0, 20))
         self.add_button("Search flights", self.show_search)
-        self.add_button("My booking", self.show_coming_soon)
+        self.add_button("My booking", self.show_manage)
         self.add_button("Admin", self.show_coming_soon)
 
     def show_search(self):
@@ -637,9 +640,14 @@ class SkyPortApp:
             messagebox.showinfo("No flight selected",
                                 "Please click a flight in the table first.")
             return
+        self.show_booking(self.find_flight(selected[0]))
+
+    def find_flight(self, flight_id):
+        """Return the flight with this id, or None if there is none."""
         for flight in self.flights:
-            if flight["id"] == selected[0]:
-                self.show_booking(flight)
+            if flight["id"] == flight_id:
+                return flight
+        return None
 
     def form_label(self, parent, text, row):
         """Put a label in the left column of a form, on the given row."""
@@ -737,10 +745,132 @@ class SkyPortApp:
             return
         messagebox.showinfo("Booking confirmed",
                             "Your booking reference is " +
-                            booking["reference"] + ". Keep it to manage "
-                            "your booking.")
+                            booking["reference"] + ". Use it on the "
+                            "My booking screen.")
         self.name_box.delete(0, "end")
         self.update_seats()
+
+    def show_manage(self):
+        """Show the My Booking screen: find, cancel and check in."""
+        self.found = None
+        self.clear_screen()
+        self.add_title("My booking")
+
+        find_row = tk.Frame(self.screen, bg=WHITE)
+        find_row.pack(pady=5)
+        label = tk.Label(find_row, text="Booking reference:",
+                         font=TEXT_FONT, fg=NAVY, bg=WHITE)
+        label.pack(side="left")
+        self.reference_box = tk.Entry(find_row, font=TEXT_FONT, width=12)
+        self.reference_box.pack(side="left", padx=8)
+        find_button = self.make_button(find_row, "Find", self.find_reference)
+        find_button.pack(side="left")
+
+        self.details = tk.Label(self.screen, justify="left", padx=20,
+                                pady=12)
+        self.details.pack(pady=15)
+        self.show_panel("Type your reference (for example SP1001) "
+                        "and click Find.", False)
+
+        action_row = tk.Frame(self.screen, bg=WHITE)
+        action_row.pack(pady=5)
+        cancel_button = self.make_button(action_row, "Cancel booking",
+                                         self.cancel_found)
+        cancel_button.pack(side="left", padx=4)
+        check_in_button = self.make_button(action_row, "Check in",
+                                           self.check_in_found)
+        check_in_button.pack(side="left", padx=4)
+        pass_button = self.make_button(action_row, "Boarding pass",
+                                       self.show_boarding_pass)
+        pass_button.pack(side="left", padx=4)
+        home_button = self.make_button(action_row, "Back to home",
+                                       self.show_home)
+        home_button.pack(side="left", padx=4)
+
+    def show_panel(self, text, is_boarding_pass):
+        """Show text in the details panel, styled as a pass or not."""
+        if is_boarding_pass:
+            self.details.configure(text=text, font=PASS_FONT, fg=WHITE,
+                                   bg=NAVY, relief="ridge", bd=4)
+        else:
+            self.details.configure(text=text, font=TEXT_FONT, fg=NAVY,
+                                   bg=WHITE, relief="flat", bd=0)
+
+    def find_reference(self):
+        """Look up the typed reference and show the booking's details."""
+        reference = self.reference_box.get().strip()
+        self.found = find_booking(self.bookings, reference)
+        if self.found is None:
+            self.show_panel("No booking found with reference " +
+                            reference + ".", False)
+        else:
+            self.show_details()
+
+    def show_details(self):
+        """Show every detail of the booking that was found."""
+        booking = self.found
+        flight = self.find_flight(booking["flight_id"])
+        status = booking["status"].replace("_", " ").capitalize()
+        text = ("Reference: " + booking["reference"] +
+                "\nPassenger: " + booking["passenger"] +
+                "\nFlight: " + flight["id"] + ", " + flight["origin"] +
+                " to " + flight["destination"] + ", departs " +
+                flight["departure"] +
+                "\nCabin: " + booking["cabin"] + ", seat " +
+                booking["seat"] +
+                "\nBags: " + str(booking["bags"]) +
+                "\nTotal: $" + str(booking["total_price"]) +
+                " (simulated CAD)" +
+                "\nStatus: " + status)
+        self.show_panel(text, False)
+
+    def cancel_found(self):
+        """Cancel the booking on screen, after asking the user first."""
+        if self.found is None:
+            messagebox.showinfo("No booking", "Please find a booking first.")
+            return
+        reference = self.found["reference"]
+        answer = messagebox.askyesno("Cancel booking",
+                                     "Cancel booking " + reference + "?")
+        if not answer:
+            return
+        if cancel_booking(self.bookings, reference):
+            messagebox.showinfo("Cancelled", "Booking " + reference +
+                                " is cancelled and its seat is free.")
+        else:
+            messagebox.showerror("Not cancelled", "Only confirmed "
+                                 "bookings can be cancelled.")
+        self.show_details()
+
+    def check_in_found(self):
+        """Check in the booking on screen and show its boarding pass."""
+        if self.found is None:
+            messagebox.showinfo("No booking", "Please find a booking first.")
+            return
+        if check_in_booking(self.bookings, self.found["reference"]):
+            self.show_boarding_pass()
+        else:
+            messagebox.showerror("Not checked in", "Only confirmed "
+                                 "bookings can be checked in.")
+
+    def show_boarding_pass(self):
+        """Show a text boarding pass for a checked-in booking."""
+        if self.found is None or self.found["status"] != "checked_in":
+            messagebox.showinfo("No boarding pass", "Please check in "
+                                "first to get your boarding pass.")
+            return
+        booking = self.found
+        flight = self.find_flight(booking["flight_id"])
+        text = ("SKYPORT  -  BOARDING PASS\n" +
+                "\nPassenger : " + booking["passenger"] +
+                "\nFlight    : " + flight["id"] +
+                "\nFrom      : " + flight["origin"] +
+                "\nTo        : " + flight["destination"] +
+                "\nDeparts   : " + flight["departure"] +
+                "\nCabin     : " + booking["cabin"] +
+                "\nSeat      : " + booking["seat"] +
+                "\nReference : " + booking["reference"])
+        self.show_panel(text, True)
 
     def show_coming_soon(self):
         """Show a placeholder for screens that are not built yet."""
