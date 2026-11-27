@@ -344,4 +344,3 @@ def test_booking_statistics():
     assert stats["cancelled_bookings"] == 1
     assert stats["active_revenue"] == 730  # 280 + 450
     assert stats["available_seats"] == 48  # 50 - 2 active seats
-

@@ -84,7 +84,6 @@ pytest test_project.py
 | `test_validate_passenger_name` | Accepts letters, spaces, hyphens and apostrophes; rejects digits, symbols, blanks, names under 2 or over 50 characters. |
 | `test_calculate_baggage_fee` | 0–3 bags cost $30 each; negative, too many, decimal and True bag counts raise ValueError. |
 | `test_calculate_ticket_price` | Cabin price plus baggage fee is correct; an invalid cabin or bag count raises ValueError. |
-*TODO: add a row for each remaining test as it is written.*
 
 ## Known limitations
 *TODO: finish as the program is built.* So far:
