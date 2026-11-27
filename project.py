@@ -8,6 +8,7 @@ No real airline data or payments are used.
 """
 
 import tkinter as tk
+from tkinter import messagebox
 from tkinter import ttk
 
 # The two cabin types every flight offers.
@@ -467,6 +468,7 @@ class SkyPortApp:
         bookings: the list of booking dictionaries.
         screen: the frame that holds whatever screen is showing.
         results: the flights shown on the Flight Search screen.
+        flight: the flight being booked on the Booking screen.
     """
 
     def __init__(self, root, flights, bookings):
@@ -475,6 +477,7 @@ class SkyPortApp:
         self.flights = flights
         self.bookings = bookings
         self.results = []
+        self.flight = None
 
         self.root.title("SkyPort")
         self.root.geometry("760x600")
@@ -570,7 +573,15 @@ class SkyPortApp:
         self.message = tk.Label(self.screen, font=TEXT_FONT, fg=NAVY,
                                 bg=WHITE)
         self.message.pack()
-        self.add_button("Back to home", self.show_home)
+
+        bottom_row = tk.Frame(self.screen, bg=WHITE)
+        bottom_row.pack(pady=10)
+        book_button = self.make_button(bottom_row, "Book selected flight",
+                                       self.book_selected)
+        book_button.pack(side="left", padx=4)
+        home_button = self.make_button(bottom_row, "Back to home",
+                                       self.show_home)
+        home_button.pack(side="left", padx=4)
 
         self.show_flights(self.flights)
 
@@ -618,6 +629,118 @@ class SkyPortApp:
     def sort_by_business(self):
         """Sort the table by Business price (used by a button)."""
         self.sort_results("Business")
+
+    def book_selected(self):
+        """Open the Booking screen for the flight clicked in the table."""
+        selected = self.table.selection()
+        if len(selected) == 0:
+            messagebox.showinfo("No flight selected",
+                                "Please click a flight in the table first.")
+            return
+        for flight in self.flights:
+            if flight["id"] == selected[0]:
+                self.show_booking(flight)
+
+    def form_label(self, parent, text, row):
+        """Put a label in the left column of a form, on the given row."""
+        label = tk.Label(parent, text=text, font=TEXT_FONT, fg=NAVY,
+                         bg=WHITE)
+        label.grid(row=row, column=0, sticky="w", padx=10, pady=8)
+
+    def show_booking(self, flight):
+        """Show the Booking screen: cabin, seat, name, bags and price."""
+        self.flight = flight
+        self.clear_screen()
+        self.add_title("Book flight " + flight["id"])
+        info = tk.Label(self.screen, font=TEXT_FONT, fg=NAVY, bg=WHITE,
+                        text=flight["origin"] + " to " +
+                        flight["destination"] + ", departs " +
+                        flight["departure"])
+        info.pack(pady=(0, 10))
+
+        form = tk.Frame(self.screen, bg=WHITE)
+        form.pack()
+
+        self.form_label(form, "Cabin:", 0)
+        self.cabin_choice = tk.StringVar(value="Economy")
+        column = 1
+        for cabin in CABINS:
+            option = tk.Radiobutton(form, text=cabin, value=cabin,
+                                    variable=self.cabin_choice,
+                                    command=self.update_seats,
+                                    font=TEXT_FONT, fg=NAVY, bg=WHITE,
+                                    activebackground=WHITE)
+            option.grid(row=0, column=column, sticky="w")
+            column = column + 1
+
+        self.form_label(form, "Seat:", 1)
+        self.seat_box = ttk.Combobox(form, state="readonly", width=8,
+                                     font=TEXT_FONT)
+        self.seat_box.grid(row=1, column=1, sticky="w")
+
+        self.form_label(form, "Passenger name:", 2)
+        self.name_box = tk.Entry(form, font=TEXT_FONT, width=24)
+        self.name_box.grid(row=2, column=1, columnspan=2, sticky="w")
+
+        self.form_label(form, "Checked bags:", 3)
+        self.bags_box = tk.Spinbox(form, from_=0, to=MAX_BAGS, width=4,
+                                   state="readonly", font=TEXT_FONT,
+                                   command=self.update_price)
+        self.bags_box.grid(row=3, column=1, sticky="w")
+
+        self.price_label = tk.Label(self.screen, font=HEADING_FONT,
+                                    fg=TEAL, bg=WHITE)
+        self.price_label.pack(pady=15)
+
+        button_row = tk.Frame(self.screen, bg=WHITE)
+        button_row.pack()
+        confirm_button = self.make_button(button_row, "Confirm booking",
+                                          self.confirm_booking)
+        confirm_button.pack(side="left", padx=4)
+        back_button = self.make_button(button_row, "Back to search",
+                                       self.show_search)
+        back_button.pack(side="left", padx=4)
+
+        self.update_seats()
+
+    def update_seats(self):
+        """Fill the seat list with the free seats in the chosen cabin."""
+        cabin = self.cabin_choice.get()
+        seats = available_seats(self.flight, self.bookings, cabin)
+        self.seat_box.configure(values=seats)
+        self.seat_box.set("")
+        self.update_price()
+
+    def update_price(self):
+        """Show the ticket price, bag fee and total for the choices."""
+        cabin = self.cabin_choice.get()
+        bags = int(self.bags_box.get())
+        fee = calculate_baggage_fee(bags)
+        total = calculate_ticket_price(self.flight, cabin, bags)
+        self.price_label.configure(
+            text="Ticket $" + str(total - fee) + " + bags $" + str(fee) +
+            " = Total $" + str(total) + " (simulated CAD)")
+
+    def confirm_booking(self):
+        """Try to make the booking and tell the user what happened."""
+        seat = self.seat_box.get()
+        if seat == "":
+            messagebox.showerror("No seat chosen", "Please choose a seat.")
+            return
+        try:
+            booking = make_booking(self.flights, self.bookings,
+                                   self.name_box.get(), self.flight["id"],
+                                   self.cabin_choice.get(), seat,
+                                   int(self.bags_box.get()))
+        except ValueError as error:
+            messagebox.showerror("Booking not made", str(error))
+            return
+        messagebox.showinfo("Booking confirmed",
+                            "Your booking reference is " +
+                            booking["reference"] + ". Keep it to manage "
+                            "your booking.")
+        self.name_box.delete(0, "end")
+        self.update_seats()
 
     def show_coming_soon(self):
         """Show a placeholder for screens that are not built yet."""
