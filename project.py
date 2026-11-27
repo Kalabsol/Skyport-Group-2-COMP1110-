@@ -483,7 +483,7 @@ class SkyPortApp:
         self.found = None
 
         self.root.title("SkyPort")
-        self.root.geometry("760x600")
+        self.root.geometry("760x660")
         self.root.configure(bg=WHITE)
 
         style = ttk.Style()
@@ -529,7 +529,7 @@ class SkyPortApp:
         welcome.pack(pady=(0, 20))
         self.add_button("Search flights", self.show_search)
         self.add_button("My booking", self.show_manage)
-        self.add_button("Admin", self.show_coming_soon)
+        self.add_button("Admin", self.show_admin)
 
     def show_search(self):
         """Show the Flight Search screen: search, sort and a table."""
@@ -872,10 +872,54 @@ class SkyPortApp:
                 "\nReference : " + booking["reference"])
         self.show_panel(text, True)
 
-    def show_coming_soon(self):
-        """Show a placeholder for screens that are not built yet."""
+    def show_admin(self):
+        """Show the Admin screen: booking statistics and all bookings."""
         self.clear_screen()
-        self.add_title("Coming soon")
+        self.add_title("Admin")
+
+        stats = booking_statistics(self.flights, self.bookings)
+        rows = [
+            ("Active bookings", str(stats["active_bookings"])),
+            ("Checked-in passengers", str(stats["checked_in"])),
+            ("Cancelled bookings", str(stats["cancelled_bookings"])),
+            ("Available seats", str(stats["available_seats"])),
+            ("Active revenue", "$" + str(stats["active_revenue"]) +
+             " (simulated CAD)"),
+        ]
+        stats_box = tk.Frame(self.screen, bg=WHITE)
+        stats_box.pack()
+        row_number = 0
+        for row in rows:
+            self.form_label(stats_box, row[0] + ":", row_number)
+            value = tk.Label(stats_box, text=row[1], font=HEADING_FONT,
+                             fg=TEAL, bg=WHITE)
+            value.grid(row=row_number, column=1, sticky="w")
+            row_number = row_number + 1
+
+        table = ttk.Treeview(self.screen, show="headings", height=5,
+                             columns=("ref", "name", "flight", "seat",
+                                      "status", "total"))
+        table.heading("ref", text="Reference")
+        table.heading("name", text="Passenger")
+        table.heading("flight", text="Flight")
+        table.heading("seat", text="Seat")
+        table.heading("status", text="Status")
+        table.heading("total", text="Total")
+        for column in table["columns"]:
+            table.column(column, width=90, anchor="center")
+        table.column("ref", width=110)
+        table.column("name", width=150)
+        table.column("seat", width=130)
+        table.column("status", width=120)
+        for booking in self.bookings:
+            table.insert("", "end", values=(
+                booking["reference"], booking["passenger"],
+                booking["flight_id"],
+                booking["cabin"] + " " + booking["seat"],
+                booking["status"].replace("_", " "),
+                "$" + str(booking["total_price"])))
+        table.pack(fill="x", pady=10)
+
         self.add_button("Back to home", self.show_home)
 
 
