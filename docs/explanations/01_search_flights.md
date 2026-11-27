@@ -9,8 +9,8 @@ start or end don't matter. If the user types nothing, it returns an empty list.
 
 ## Why we need it
 Passengers usually know where they want to go, not the flight number. On the
-Flight Search screen, the **Search** button will call this function with the
-text from the destination box and show the results.
+Flight Search screen, the **Search** button calls this function (in `do_search`) with
+the text from the destination box and shows the results in the table.
 
 ## Inputs and output
 - `flights` — a list of flight dictionaries (like `FLIGHTS` in project.py).

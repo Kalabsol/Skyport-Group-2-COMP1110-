@@ -9,8 +9,8 @@ the cheapest flight that is left and moving it into the answer list.
 
 ## Why we need it
 Passengers often want the cheapest option first. On the Flight Search screen,
-the **Sort by Economy price** / **Sort by Business price** buttons will call
-this function on the current results.
+the **Sort by Economy price** / **Sort by Business price** buttons call
+this function (in `sort_results`) on the flights currently shown.
 
 ## Inputs and output
 - `flights` — a list of flight dictionaries.

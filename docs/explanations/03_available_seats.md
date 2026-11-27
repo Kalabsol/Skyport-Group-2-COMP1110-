@@ -9,9 +9,10 @@ in) on that same flight and cabin, then returns the flight's seats that are
 not in that collection, in their normal order.
 
 ## Why we need it
-This is what stops double-booking. The Booking screen will fill the seat
-drop-down with this list, so a taken seat can't be picked. MD's `make_booking`
-can also use it to double-check the chosen seat is free.
+This is what stops double-booking. The Booking screen fills the seat
+drop-down with this list (in `update_seats`), so a taken seat can't be picked.
+MD's `make_booking` also uses it to double-check the chosen seat is free, and
+Jidaoy's `booking_statistics` uses it to count free seats.
 
 ## Inputs and output
 - `flight` — one flight dictionary (has `"id"` and `"seats"`).
