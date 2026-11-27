@@ -8,6 +8,7 @@ No real airline data or payments are used.
 """
 
 import tkinter as tk
+from tkinter import ttk
 
 # The two cabin types every flight offers.
 CABINS = ["Economy", "Business"]
@@ -252,7 +253,6 @@ def calculate_ticket_price(flight, cabin, bags):
     return total_price
 
 
-
 # ---------------------------------------------------------------------
 # MD (Member 3) - Reservation creation
 # ---------------------------------------------------------------------
@@ -455,6 +455,7 @@ TEAL = "#13a89e"
 WHITE = "#ffffff"
 TITLE_FONT = ("Segoe UI", 22, "bold")
 TEXT_FONT = ("Segoe UI", 11)
+HEADING_FONT = ("Segoe UI", 11, "bold")
 
 
 class SkyPortApp:
@@ -465,6 +466,7 @@ class SkyPortApp:
         flights: the list of flight dictionaries.
         bookings: the list of booking dictionaries.
         screen: the frame that holds whatever screen is showing.
+        results: the flights shown on the Flight Search screen.
     """
 
     def __init__(self, root, flights, bookings):
@@ -472,10 +474,17 @@ class SkyPortApp:
         self.root = root
         self.flights = flights
         self.bookings = bookings
+        self.results = []
 
         self.root.title("SkyPort")
-        self.root.geometry("760x520")
+        self.root.geometry("760x600")
         self.root.configure(bg=WHITE)
+
+        style = ttk.Style()
+        style.theme_use("clam")
+        style.configure("Treeview", font=TEXT_FONT, rowheight=28)
+        style.configure("Treeview.Heading", font=HEADING_FONT,
+                        foreground=WHITE, background=NAVY)
 
         self.screen = tk.Frame(self.root, bg=WHITE)
         self.screen.pack(fill="both", expand=True, padx=20, pady=20)
@@ -493,10 +502,15 @@ class SkyPortApp:
                          fg=NAVY, bg=WHITE)
         title.pack(pady=(0, 15))
 
+    def make_button(self, parent, text, command):
+        """Create a teal button inside parent. The caller places it."""
+        return tk.Button(parent, text=text, command=command,
+                         font=TEXT_FONT, fg=WHITE, bg=TEAL)
+
     def add_button(self, text, command):
-        """Add a teal button that calls command when it is clicked."""
-        button = tk.Button(self.screen, text=text, command=command,
-                           font=TEXT_FONT, fg=WHITE, bg=TEAL, width=22)
+        """Add a wide teal button below everything else on the screen."""
+        button = self.make_button(self.screen, text, command)
+        button.configure(width=22)
         button.pack(pady=5)
 
     def show_home(self):
@@ -507,9 +521,103 @@ class SkyPortApp:
                            text="Welcome! All flights and prices are "
                                 "fictional (simulated CAD).")
         welcome.pack(pady=(0, 20))
-        self.add_button("Search flights", self.show_coming_soon)
+        self.add_button("Search flights", self.show_search)
         self.add_button("My booking", self.show_coming_soon)
         self.add_button("Admin", self.show_coming_soon)
+
+    def show_search(self):
+        """Show the Flight Search screen: search, sort and a table."""
+        self.clear_screen()
+        self.add_title("Search flights")
+
+        search_row = tk.Frame(self.screen, bg=WHITE)
+        search_row.pack(pady=5)
+        label = tk.Label(search_row, text="Destination:", font=TEXT_FONT,
+                         fg=NAVY, bg=WHITE)
+        label.pack(side="left")
+        self.search_box = tk.Entry(search_row, font=TEXT_FONT, width=20)
+        self.search_box.pack(side="left", padx=8)
+        search_button = self.make_button(search_row, "Search",
+                                         self.do_search)
+        search_button.pack(side="left")
+
+        sort_row = tk.Frame(self.screen, bg=WHITE)
+        sort_row.pack(pady=5)
+        economy_button = self.make_button(sort_row, "Sort by Economy price",
+                                          self.sort_by_economy)
+        economy_button.pack(side="left", padx=4)
+        business_button = self.make_button(sort_row,
+                                           "Sort by Business price",
+                                           self.sort_by_business)
+        business_button.pack(side="left", padx=4)
+        all_button = self.make_button(sort_row, "Show all",
+                                      self.show_all_flights)
+        all_button.pack(side="left", padx=4)
+
+        self.table = ttk.Treeview(self.screen, show="headings", height=6,
+                                  columns=("id", "route", "time", "eco",
+                                           "bus"))
+        self.table.heading("id", text="Flight")
+        self.table.heading("route", text="Route")
+        self.table.heading("time", text="Departs")
+        self.table.heading("eco", text="Economy")
+        self.table.heading("bus", text="Business")
+        for column in self.table["columns"]:
+            self.table.column(column, width=120, anchor="center")
+        self.table.column("route", width=220)
+        self.table.pack(fill="x", pady=10)
+
+        self.message = tk.Label(self.screen, font=TEXT_FONT, fg=NAVY,
+                                bg=WHITE)
+        self.message.pack()
+        self.add_button("Back to home", self.show_home)
+
+        self.show_flights(self.flights)
+
+    def show_flights(self, flights):
+        """Fill the results table with flights and remember them."""
+        self.results = flights
+        for row in self.table.get_children():
+            self.table.delete(row)
+        for flight in flights:
+            route = flight["origin"] + " to " + flight["destination"]
+            economy = "$" + str(flight["prices"]["Economy"])
+            business = "$" + str(flight["prices"]["Business"])
+            self.table.insert("", "end", iid=flight["id"],
+                              values=(flight["id"], route,
+                                      flight["departure"], economy,
+                                      business))
+        self.message.configure(text=str(len(flights)) + " flight(s) shown.")
+
+    def do_search(self):
+        """Show only the flights whose destination matches the box."""
+        text = self.search_box.get().strip()
+        if text == "":
+            self.show_all_flights()
+            return
+        results = search_flights(self.flights, text)
+        self.show_flights(results)
+        if len(results) == 0:
+            self.message.configure(text="No flights to " + text + ".")
+
+    def show_all_flights(self):
+        """Empty the search box and show every flight again."""
+        self.search_box.delete(0, "end")
+        self.show_flights(self.flights)
+
+    def sort_results(self, cabin):
+        """Re-order the flights in the table, cheapest first."""
+        self.show_flights(sort_flights_by_price(self.results, cabin))
+        self.message.configure(text="Sorted by " + cabin +
+                               " price, cheapest first.")
+
+    def sort_by_economy(self):
+        """Sort the table by Economy price (used by a button)."""
+        self.sort_results("Economy")
+
+    def sort_by_business(self):
+        """Sort the table by Business price (used by a button)."""
+        self.sort_results("Business")
 
     def show_coming_soon(self):
         """Show a placeholder for screens that are not built yet."""
