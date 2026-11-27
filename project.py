@@ -7,6 +7,8 @@ All flights, passengers and prices in this program are made up.
 No real airline data or payments are used.
 """
 
+import json
+import os
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
@@ -23,6 +25,10 @@ BAG_FEE = 30
 
 # Maximum number of checked bags.
 MAX_BAGS = 3
+
+# Where bookings are saved: data/bookings.json, next to this file.
+BOOKINGS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             "data", "bookings.json")
 
 # Fictional flights. Prices are whole numbers in simulated CAD.
 FLIGHTS = [
@@ -447,6 +453,48 @@ def booking_statistics(flights, bookings):
 
 
 # ---------------------------------------------------------------------
+# Shared - Saving and loading bookings
+# ---------------------------------------------------------------------
+
+def load_bookings(file_path):
+    """Read the list of bookings from a JSON file.
+
+    Args:
+        file_path: the path of the bookings file.
+
+    Returns:
+        The list of booking dictionaries. If the file does not exist
+        yet, an empty list.
+
+    Raises:
+        ValueError: if the file is damaged or does not hold a list.
+    """
+    try:
+        with open(file_path, encoding="utf-8") as file:
+            bookings = json.load(file)
+    except FileNotFoundError:
+        return []
+    except json.JSONDecodeError:
+        raise ValueError("The bookings file is damaged.")
+    if type(bookings) is not list:
+        raise ValueError("The bookings file does not hold a list.")
+    return bookings
+
+
+def save_bookings(bookings, file_path):
+    """Write the list of bookings to a JSON file.
+
+    Any old contents of the file are replaced.
+
+    Args:
+        bookings: the list of booking dictionaries.
+        file_path: the path of the bookings file.
+    """
+    with open(file_path, "w", encoding="utf-8") as file:
+        json.dump(bookings, file, indent=4)
+
+
+# ---------------------------------------------------------------------
 # Window (GUI) - the SkyPortApp class
 # ---------------------------------------------------------------------
 
@@ -467,17 +515,19 @@ class SkyPortApp:
         root: the main Tkinter window.
         flights: the list of flight dictionaries.
         bookings: the list of booking dictionaries.
+        bookings_file: the file the bookings are saved in.
         screen: the frame that holds whatever screen is showing.
         results: the flights shown on the Flight Search screen.
         flight: the flight being booked on the Booking screen.
         found: the booking shown on the My Booking screen, or None.
     """
 
-    def __init__(self, root, flights, bookings):
+    def __init__(self, root, flights, bookings, bookings_file):
         """Set up the window and show the Home screen."""
         self.root = root
         self.flights = flights
         self.bookings = bookings
+        self.bookings_file = bookings_file
         self.results = []
         self.flight = None
         self.found = None
@@ -496,6 +546,14 @@ class SkyPortApp:
         self.screen.pack(fill="both", expand=True, padx=20, pady=20)
 
         self.show_home()
+
+    def save(self):
+        """Save the bookings, and warn the user if that fails."""
+        try:
+            save_bookings(self.bookings, self.bookings_file)
+        except OSError:
+            messagebox.showerror("Not saved", "Your change was made, but "
+                                 "it could not be saved to the file.")
 
     def clear_screen(self):
         """Remove everything from the screen so a new one can be drawn."""
@@ -743,6 +801,7 @@ class SkyPortApp:
         except ValueError as error:
             messagebox.showerror("Booking not made", str(error))
             return
+        self.save()
         messagebox.showinfo("Booking confirmed",
                             "Your booking reference is " +
                             booking["reference"] + ". Use it on the "
@@ -835,6 +894,7 @@ class SkyPortApp:
         if not answer:
             return
         if cancel_booking(self.bookings, reference):
+            self.save()
             messagebox.showinfo("Cancelled", "Booking " + reference +
                                 " is cancelled and its seat is free.")
         else:
@@ -848,6 +908,7 @@ class SkyPortApp:
             messagebox.showinfo("No booking", "Please find a booking first.")
             return
         if check_in_booking(self.bookings, self.found["reference"]):
+            self.save()
             self.show_boarding_pass()
         else:
             messagebox.showerror("Not checked in", "Only confirmed "
@@ -928,9 +989,16 @@ class SkyPortApp:
 # ---------------------------------------------------------------------
 
 def main():
-    """Open the SkyPort window and keep it running until it is closed."""
+    """Load the bookings, then open the SkyPort window until closed."""
     root = tk.Tk()
-    SkyPortApp(root, FLIGHTS, [])
+    try:
+        bookings = load_bookings(BOOKINGS_FILE)
+    except ValueError as error:
+        messagebox.showerror("Cannot start SkyPort", str(error) + " Fix "
+                             "or remove data/bookings.json and try again.")
+        root.destroy()
+        return
+    SkyPortApp(root, FLIGHTS, bookings, BOOKINGS_FILE)
     root.mainloop()
 
 

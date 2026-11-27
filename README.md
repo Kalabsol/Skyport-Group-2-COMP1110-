@@ -47,7 +47,10 @@ dictionaries called `FLIGHTS`; bookings are a list of dictionaries.
 | `cancel_booking` | Cancels a confirmed booking, changing its status to cancelled.  |
 | `check_in_booking` | Checks in a confirmed booking, changing its status to checked_in.|
 | `booking_statistics` | Counts active/checked-in/cancelled bookings, calculates revenue, and counts free seats. |
-| `main` | Starts the program (GUI to be added). |
+| `load_bookings` | Read the bookings from `data/bookings.json`; a missing file gives an empty list, a damaged file raises `ValueError`. |
+| `save_bookings` | Write the bookings to `data/bookings.json` after every booking, cancellation and check-in. |
+| `SkyPortApp` | The Tkinter window (a class). It shows one screen at a time: Home, Search flights, Booking, My booking and Admin. |
+| `main` | Loads the saved bookings and opens the SkyPort window. |
 
 Other files:
 - `test_project.py` — pytest tests for the functions above.
@@ -84,6 +87,8 @@ pytest test_project.py
 | `test_validate_passenger_name` | Accepts letters, spaces, hyphens and apostrophes; rejects digits, symbols, blanks, names under 2 or over 50 characters. |
 | `test_calculate_baggage_fee` | 0–3 bags cost $30 each; negative, too many, decimal and True bag counts raise ValueError. |
 | `test_calculate_ticket_price` | Cabin price plus baggage fee is correct; an invalid cabin or bag count raises ValueError. |
+| `test_load_bookings` | Missing file gives `[]`; saved bookings load back; a damaged file or a non-list raises `ValueError`. Uses a temporary folder, so the real file is never touched. |
+| `test_save_bookings` | Saved file is valid JSON that loads back the same; saving again replaces the old contents. Uses a temporary folder. |
 
 ## Known limitations
 *TODO: finish as the program is built.* So far:
@@ -98,6 +103,7 @@ pytest test_project.py
 | Jake | Pricing and validation | `validate_passenger_name`, `calculate_baggage_fee`, `calculate_ticket_price` |
 | MD | Reservation creation | `next_booking_reference`, `make_booking`, `find_booking` |
 | Jidaoy | Booking operations | `cancel_booking`, `check_in_booking`, `booking_statistics` |
+| Kalab | Window and saving (shared work) | `SkyPortApp` (all five screens), `load_bookings`, `save_bookings`, `main` |
 
 *TODO: add who worked on the GUI, README and video.*
 

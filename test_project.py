@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from project import (
@@ -9,8 +11,10 @@ from project import (
     cancel_booking,
     check_in_booking,
     find_booking,
+    load_bookings,
     make_booking,
     next_booking_reference,
+    save_bookings,
     search_flights,
     sort_flights_by_price,
     validate_passenger_name,
@@ -344,3 +348,55 @@ def test_booking_statistics():
     assert stats["cancelled_bookings"] == 1
     assert stats["active_revenue"] == 730  # 280 + 450
     assert stats["available_seats"] == 48  # 50 - 2 active seats
+
+
+# ---------------------------------------------------------------------
+# Shared - Saving and loading bookings
+# ---------------------------------------------------------------------
+
+def test_load_bookings(tmp_path):
+    """Loading reads the file, handles a missing file, rejects bad data."""
+    file_path = tmp_path / "bookings.json"
+
+    # No file yet: start with an empty list instead of crashing.
+    assert load_bookings(file_path) == []
+
+    file_path.write_text("[]", encoding="utf-8")
+    assert load_bookings(file_path) == []
+
+    booking = make_test_booking("SP1001", "SK101", "Economy", "3A",
+                                "confirmed")
+    file_path.write_text(json.dumps([booking]), encoding="utf-8")
+    assert load_bookings(file_path) == [booking]
+
+    # A damaged file, or one that is not a list, raises ValueError.
+    file_path.write_text("this is not JSON", encoding="utf-8")
+    with pytest.raises(ValueError):
+        load_bookings(file_path)
+
+    file_path.write_text('{"reference": "SP1001"}', encoding="utf-8")
+    with pytest.raises(ValueError):
+        load_bookings(file_path)
+
+
+def test_save_bookings(tmp_path):
+    """Saving writes valid JSON that loads back exactly the same."""
+    file_path = tmp_path / "bookings.json"
+    bookings = [
+        make_test_booking("SP1001", "SK101", "Economy", "3A", "confirmed"),
+        make_test_booking("SP1002", "SK202", "Business", "1A", "cancelled"),
+    ]
+
+    save_bookings(bookings, file_path)
+    assert json.loads(file_path.read_text(encoding="utf-8")) == bookings
+    assert load_bookings(file_path) == bookings
+
+    # Saving again replaces the old contents.
+    save_bookings(bookings[:1], file_path)
+    assert load_bookings(file_path) == bookings[:1]
+
+    save_bookings([], file_path)
+    assert load_bookings(file_path) == []
+
+    # The list itself is not changed by saving.
+    assert len(bookings) == 2
